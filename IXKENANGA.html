@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IX MEMORY</title>
+    <!-- Tailwind CSS untuk Desain Mirip Instagram -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+
+    <!-- TOP NAVBAR -->
+    <nav class="bg-white border-b border-gray-200 fixed top-0 w-full z-50 px-4 py-3 flex justify-between items-center max-w-md mx-auto left-0 right-0">
+        <h1 class="text-2xl font-bold tracking-wider text-indigo-600 italic">IX MEMORY</h1>
+        <div class="flex items-center space-x-4">
+            <button id="logoutBtn" class="hidden text-red-500 text-sm font-semibold">Keluar</button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER (Mobile-First / Mirip App) -->
+    <main class="max-w-md mx-auto pt-16 pb-20 px-4 min-h-screen bg-white shadow-sm">
+        
+        <!-- 1. HALAMAN LOGIN / REGISTER -->
+        <section id="authSection" class="pt-10 space-y-6">
+            <div class="text-center">
+                <h2 class="text-xl font-semibold text-gray-700">Selamat Datang di IX MEMORY</h2>
+                <p class="text-gray-500 text-sm">Masuk atau daftar untuk berbagi momen.</p>
+            </div>
+            <div class="space-y-3">
+                <input type="email" id="authEmail" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                <input type="password" id="authPassword" placeholder="Password" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                <button id="loginBtn" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition">Masuk</button>
+                <button id="registerBtn" class="w-full bg-gray-200 text-gray-700 p-3 rounded-lg font-semibold hover:bg-gray-300 transition">Daftar Akun Baru</button>
+            </div>
+        </section>
+
+        <!-- 2. HALAMAN UTAMA (FEED & PROFIL) - Hidden saat belum login -->
+        <section id="mainSection" class="hidden space-y-6">
+            
+            <!-- PROFIL USER -->
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-150 flex items-center space-x-4">
+                <div class="relative">
+                    <img id="userAvatar" src="https://via.placeholder.com/150" class="w-16 h-16 rounded-full object-cover border-2 border-indigo-500">
+                    <label for="uploadAvatar" class="absolute bottom-0 right-0 bg-indigo-600 text-white p-1 rounded-full text-xs cursor-pointer hover:bg-indigo-700">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="uploadAvatar" accept="image/*" class="hidden">
+                </div>
+                <div class="flex-1 space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="userNickname" value="Username" class="font-bold text-lg bg-transparent border-b border-transparent hover:border-gray-400 focus:border-indigo-500 focus:outline-none w-32">
+                        <button id="saveProfileBtn" class="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-200">Simpan</button>
+                    </div>
+                    <p id="userEmailDisplay" class="text-xs text-gray-500">email@user.com</p>
+                </div>
+            </div>
+
+            <!-- FORM BUAT POSTINGAN (FOTO / VIDEO) -->
+            <div class="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm">
+                <h3 class="font-semibold text-sm text-gray-700">Bagikan Memory Baru</h3>
+                <textarea id="postCaption" placeholder="Tulis cerita harimu..." class="w-full p-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 resize-none" rows="2"></textarea>
+                
+                <div class="flex items-center justify-between">
+                    <label for="postFile" class="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer hover:text-indigo-600">
+                        <i class="fas fa-images text-xl text-green-500"></i>
+                        <span id="fileNameDisplay">Foto / Video</span>
+                    </label>
+                    <input type="file" id="postFile" accept="image/*,video/*" class="hidden">
+                    
+                    <button id="submitPostBtn" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">Posting</button>
+                </div>
+            </div>
+
+            <hr class="border-gray-200">
+
+            <!-- TIMELINE / FEED UTAMA -->
+            <div id="feedContainer" class="space-y-6">
+                <!-- Postingan orang lain dan kita akan muncul di sini secara realtime -->
+                <div class="text-center py-8 text-gray-400 text-sm">Memuat data timeline...</div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- FOOTER / NAVIGASI BAWAH (Estetika Instagram) -->
+    <footer class="bg-white border-t border-gray-200 fixed bottom-0 w-full z-50 max-w-md mx-auto left-0 right-0 py-3 flex justify-around text-gray-500 text-xl">
+        <i class="fas fa-home text-indigo-600 cursor-pointer"></i>
+        <i class="fas fa-search cursor-not-allowed opacity-50"></i>
+        <i class="fas fa-heart cursor-not-allowed opacity-50"></i>
+        <i class="fas fa-user cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"></i>
+    </footer>
+
+    <!-- ==================== LOGIKA BACKEND & CONFIGURATION ==================== -->
+    <!-- Menggunakan Firebase v9 via CDN -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        // ⚠️ GANTI ISI CONFIG DI BAWAH INI DENGAN DATA DARI FIREBASE CONSOLE ANDA agar servernya aktif!
+        const firebaseConfig = {
+            apiKey: "AIzaSyCih-_tJVux__EmQ1WCEdsU9jsEBir5uFw",
+            authDomain: "ix-memoryy.firebaseapp.com",
+            projectId: "ix-memoryy",
+            storageBucket: "ix-memoryy.firebasestorage.app",
+            messagingSenderId: "1037250779203",
+            appId: "1:1037250779203:web:cdccbc3b87b4fef953dcf6"
+        };
+
+        // Inisialisasi Aplikasi
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const authSection = document.getElementById('authSection');
+        const mainSection = document.getElementById('mainSection');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const feedContainer = document.getElementById('feedContainer');
+        const postFile = document.getElementById('postFile');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+
+        // Deteksi File yang dipilih user saat mau posting
+        let selectedFileBase64 = "";
+        let fileType = "";
+
+        postFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                fileNameDisplay.innerText = file.name.substring(0, 15) + "...";
+                fileType = file.type.split('/')[0]; // 'image' atau 'video'
+                
+                // Mengubah file menjadi format teks (Base64) agar bisa langsung disimpan ke Database Cloud gratisan
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    selectedFileBase64 = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Deteksi Ganti Foto Profil
+        const uploadAvatar = document.getElementById('uploadAvatar');
+        const userAvatar = document.getElementById('userAvatar');
+        uploadAvatar.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    userAvatar.src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 1. SISTEM AUTENTIKASI (Daftar & Masuk)
+        document.getElementById('registerBtn').addEventListener('click', async () => {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(userCredential.user, { displayName: "User Baru", photoURL: "https://via.placeholder.com/150" });
+                alert("Akun berhasil dibuat!");
+            } catch (error) { alert(error.message); }
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) { alert("Login gagal! Cek email/password kembali."); }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        // Memantau Status Login User secara Realtime
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                authSection.classList.add('hidden');
+                mainSection.classList.remove('hidden');
+                logoutBtn.classList.remove('hidden');
+                
+                document.getElementById('userNickname').value = user.displayName || "User";
+                document.getElementById('userEmailDisplay').innerText = user.email;
+                if(user.photoURL) userAvatar.src = user.photoURL;
+
+                muatTimeline();
+            } else {
+                authSection.classList.remove('hidden');
+                mainSection.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+                feedContainer.innerHTML = "";
+            }
+        });
+
+        // 2. UPDATE PROFILE (Ganti Nickname & Foto)
+        document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            const newName = document.getElementById('userNickname').value;
+            const newAvatar = userAvatar.src;
+
+            if (user) {
+                try {
+                    await updateProfile(user, { displayName: newName, photoURL: newAvatar });
+                    alert("Profil berhasil diperbarui di server cloud!");
+                } catch (error) { alert(error.message); }
+            }
+        });
+
+        // 3. UNGGAH POSTINGAN KE SERVER CLOUD
+        document.getElementById('submitPostBtn').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            const caption = document.getElementById('postCaption').value;
+
+            if (!caption && !selectedFileBase64) {
+                alert("Isi caption atau pilih file foto/video terlebih dahulu!");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "posts"), {
+                    username: user.displayName || "Anonim",
+                    userAvatar: user.photoURL || "https://via.placeholder.com/150",
+                    caption: caption,
+                    fileData: selectedFileBase64, // Menyimpan file media langsung di server database
+                    fileMediaType: fileType,
+                    createdAt: new Date().getTime()
+                });
+
+                // Reset Form input setelah sukses terkirim
+                document.getElementById('postCaption').value = "";
+                postFile.value = "";
+                fileNameDisplay.innerText = "Foto / Video";
+                selectedFileBase64 = "";
+                fileType = "";
+                alert("Berhasil memposting kenangan baru!");
+            } catch (error) {
+                alert("Gagal mengunggah: " + error.message);
+            }
+        });
+
+        // 4. LOAD FEED SECARA ONLINE DAN REALTIME (Bisa dilihat orang lain langsung)
+        function muatTimeline() {
+            const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+            
+            onSnapshot(q, (snapshot) => {
+                feedContainer.innerHTML = "";
+                
+                if(snapshot.empty) {
+                    feedContainer.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm">Belum ada postingan di IX MEMORY. Jadilah yang pertama!</div>`;
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const post = doc.data();
+                    let mediaHtml = "";
+
+                    // Cek jenis file (Foto atau Video) untuk ditampilkan dengan tag HTML yang sesuai
+                    if (post.fileData) {
+                        if (post.fileMediaType === 'video') {
+                            mediaHtml = `<video src="${post.fileData}" controls class="w-full h-auto max-h-80 object-cover bg-black"></video>`;
+                        } else {
+                            mediaHtml = `<img src="${post.fileData}" class="w-full h-auto max-h-80 object-cover">`;
+                        }
+                    }
+
+                    const postElement = document.createElement('div');
+                    postElement.className = "bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm";
+                    postElement.innerHTML = `
+                        <!-- Header Postingan -->
+                        <div class="flex items-center space-x-3 p-3">
+                            <img src="${post.userAvatar}" class="w-9 h-9 rounded-full object-cover border">
+                            <span class="font-bold text-sm text-gray-800">${post.username}</span>
+                        </div>
+                        <!-- Media (Foto/Video) -->
+                        ${mediaHtml}
+                        <!-- Caption & Interaksi -->
+                        <div class="p-3 space-y-2">
+                            <div class="flex space-x-4 text-xl text-gray-700">
+                                <i class="far fa-heart hover:text-red-500 cursor-pointer transition"></i>
+                                <i class="far fa-comment hover:text-indigo-600 cursor-pointer transition"></i>
+                            </div>
+                            <p class="text-sm text-gray-800">
+                                <span class="font-bold mr-2">${post.username}</span>${post.caption}
+                            </p>
+                        </div>
+                    `;
+                    feedContainer.appendChild(postElement);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
